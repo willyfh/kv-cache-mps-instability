@@ -150,7 +150,7 @@ This crossover validates the experimental setup and confirms that MPS advantage 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{fig1_latency_scaling.pdf}
-  \caption{Latency scaling by model and device. Each panel shows average latency vs.\ generated tokens for one model. Non-monotonic spikes are visible for GPT-2 Medium and GPT-2 Large on MPS at long sequence lengths, with both models entering an anomalous execution regime beyond model-size-dependent token thresholds.}
+  \caption{Latency scaling by model and device. Each panel shows average latency vs.\ generated tokens for one model. Non-monotonic spikes are visible for GPT-2 Medium and GPT-2 Large on MPS at long sequence lengths, while CPU and CUDA (T4) remain monotonic throughout.}
   \label{fig:latency_scaling}
 \end{figure}
 
@@ -189,6 +189,14 @@ At the anomalous configurations, CUDA latency remains consistent with the surrou
 
 Notably, at non-anomalous token lengths MPS is competitive with or faster than the T4 (e.g., GPT-2 Medium at 384 tokens: 5.1~s on MPS vs.\ 6.6~s on CUDA), confirming that the MPS backend is not intrinsically slow for these models.
 The pathological latency is therefore not attributable to the model architecture, the generation budget, or the workload size, but is specific to the MPS execution path at particular sequence-length thresholds.
+Figure~\ref{fig:cuda_baseline} shows the CUDA T4 latency curves for all four models; the contrast with the MPS anomalies in Figure~\ref{fig:latency_scaling} is immediate.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig5_cuda_baseline.pdf}
+  \caption{CUDA T4 latency scaling for all four models. Latency increases smoothly and monotonically across the full 128--768 token range with no anomalies, in direct contrast to the MPS backend (Figure~\ref{fig:latency_scaling}).}
+  \label{fig:cuda_baseline}
+\end{figure}
 
 \begin{table}[h]
 \centering

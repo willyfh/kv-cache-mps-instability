@@ -19,6 +19,7 @@ import seaborn as sns
 # Paths
 # ---------------------------------------------------------------------------
 MAIN_CSV          = "benchmark_results/main_crossover/benchmark_results_20260502T150901Z.csv"
+CUDA_CSV          = "benchmark_results/cuda_baseline/benchmark_results_colab_t4.csv"
 INSTABILITY_CSV   = "benchmark_results/instability_probe_final/benchmark_results_20260503T115603Z.csv"
 KV_ON_CSV         = "benchmark_results/kv_cache_on/benchmark_results_paper_merged.csv"
 KV_OFF_CSV        = "benchmark_results/kv_cache_off_rerun_v2/benchmark_results_20260504T011007Z.csv"
@@ -33,10 +34,11 @@ MODEL_LABELS = {
     "gpt2-medium": "GPT-2 Medium",
     "gpt2-large":  "GPT-2 Large",
 }
-MODE_ORDER  = ["cpu", "mps"]
+MODE_ORDER  = ["cpu", "mps", "cuda"]
 MODE_LABELS = {
     "cpu": "CPU",
     "mps": "MPS",
+    "cuda": "CUDA (T4)",
 }
 
 def _style():
@@ -48,7 +50,9 @@ def _style():
 # Fig 1 — Latency scaling: 4 subplots (one per model), all modes × tokens
 # ---------------------------------------------------------------------------
 def fig1_latency_scaling(out_path):
-    df = pd.read_csv(MAIN_CSV)
+    df_main = pd.read_csv(MAIN_CSV)
+    df_cuda = pd.read_csv(CUDA_CSV)
+    df = pd.concat([df_main, df_cuda], ignore_index=True)
     df["model_label"] = df["model"].map(MODEL_LABELS)
     df["mode_label"]  = df["execution_mode"].map(MODE_LABELS)
 
@@ -82,6 +86,37 @@ def fig1_latency_scaling(out_path):
                loc="lower center", ncol=4, bbox_to_anchor=(0.5, -0.03))
     fig.suptitle("Latency Scaling by Model and Device", fontsize=14, fontweight="bold")
     plt.tight_layout(rect=[0, 0.05, 1, 1])
+    plt.savefig(out_path, bbox_inches="tight")
+    plt.close()
+    print(f"  Saved {out_path}")
+
+
+# ---------------------------------------------------------------------------
+# Fig 5 — CUDA T4 baseline: latency scaling, smooth monotonic reference
+# ---------------------------------------------------------------------------
+def fig5_cuda_baseline(out_path):
+    df = pd.read_csv(CUDA_CSV)
+    df["model_label"] = df["model"].map(MODEL_LABELS)
+
+    _style()
+    fig, axes = plt.subplots(2, 2, figsize=(12, 8), sharey=False)
+    axes = axes.flatten()
+
+    color = sns.color_palette("colorblind")[2]  # distinct from CPU/MPS
+
+    for ax, model_key in zip(axes, MODEL_ORDER):
+        sub = df[df["model"] == model_key].sort_values("max_tokens")
+        if sub.empty:
+            continue
+        ax.plot(sub["max_tokens"], sub["avg_latency"],
+                marker="o", color=color, linewidth=1.8, markersize=5)
+        ax.set_title(MODEL_LABELS[model_key], fontweight="bold")
+        ax.set_xlabel("Generated tokens")
+        ax.set_ylabel("Avg latency (s)")
+        ax.xaxis.set_major_locator(mticker.MultipleLocator(128))
+
+    fig.suptitle("CUDA T4 Latency Scaling (Reference Baseline)", fontsize=14, fontweight="bold")
+    plt.tight_layout()
     plt.savefig(out_path, bbox_inches="tight")
     plt.close()
     print(f"  Saved {out_path}")
@@ -211,4 +246,5 @@ if __name__ == "__main__":
     fig2_instability_probe(f"{OUT_DIR}/fig2_instability_probe.pdf")
     fig3_kv_cache_ablation(f"{OUT_DIR}/fig3_kv_cache_ablation.pdf")
     fig4_prompt_ablation(f"{OUT_DIR}/fig4_prompt_ablation.pdf")
+    fig5_cuda_baseline(f"{OUT_DIR}/fig5_cuda_baseline.pdf")
     print("Done. All figures saved to media/")
