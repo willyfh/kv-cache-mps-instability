@@ -178,6 +178,37 @@ These effects are strictly non-monotonic: the anomalous configuration performs w
 Smaller models (DistilGPT-2, GPT-2) do not exhibit the anomaly within the 128--768 token range tested, suggesting a model-size threshold for the instability to manifest.
 Latency slowdown reaches up to $21\times$ in the worst case (GPT-2 Large / MPS at 384 tokens).
 
+\subsection{CUDA T4 Reference Baseline}
+\label{sec:cuda}
+
+To assess whether the non-monotonic behavior is specific to the MPS backend or a general property of the models or workload, we ran the same experiment on an NVIDIA T4 GPU (Google Colab, CUDA) under identical conditions: same models, prompt, token lengths, warmup, run count, and deterministic greedy decoding.
+
+On CUDA, latency scales smoothly and monotonically for all four models across the full 128--768 token range, with no anomalies at any token length.
+Table~\ref{tab:cuda_comparison} compares MPS and CUDA latency at the anomalous token lengths and their immediate neighbors for GPT-2 Medium and GPT-2 Large.
+At the anomalous configurations, CUDA latency remains consistent with the surrounding linear trend, while MPS latency spikes by $9.2\times$ and $10.5\times$ relative to CUDA at the same token length.
+
+Notably, at non-anomalous token lengths MPS is competitive with or faster than the T4 (e.g., GPT-2 Medium at 384 tokens: 5.1~s on MPS vs.\ 6.6~s on CUDA), confirming that the MPS backend is not intrinsically slow for these models.
+The pathological latency is therefore not attributable to the model architecture, the generation budget, or the workload size, but is specific to the MPS execution path at particular sequence-length thresholds.
+
+\begin{table}[h]
+\centering
+\caption{Latency (s) on MPS vs.\ CUDA T4 at the anomalous token lengths and immediate neighbors. \textbf{Bold rows} mark the anomalous MPS configurations. CUDA latency is monotonic throughout; MPS / CUDA ratio collapses to ${\sim}9$--$10\times$ at the spike.}
+\label{tab:cuda_comparison}
+\begin{tabular}{lrrrr}
+\toprule
+Model / tokens & MPS (s) & CUDA T4 (s) & MPS / CUDA \\
+\midrule
+GPT-2 Medium, 384     &   5.1  &  6.6  & $0.8\times$ \\
+\textbf{GPT-2 Medium, 512} & \textbf{84.5} & \textbf{9.2}  & $\mathbf{9.2\times}$ \\
+GPT-2 Medium, 640     &   8.8  & 11.2  & $0.8\times$ \\
+\midrule
+GPT-2 Large, 256      &   4.9  &  6.9  & $0.7\times$ \\
+\textbf{GPT-2 Large, 384}  & \textbf{103.4} & \textbf{9.9}  & $\mathbf{10.5\times}$ \\
+GPT-2 Large, 512      &   9.3  & 13.1  & $0.7\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Instability Probe}
 
 A focused instability sweep over 480--656 tokens at 16-token spacing reveals a broad anomalous regime with sharp boundaries.
