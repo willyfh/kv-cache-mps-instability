@@ -14,9 +14,10 @@ def load_model(model_name=DEFAULT_MODEL_NAME, execution_mode="cpu"):
     - cpu-int8
     - mps
     - mps-fp16
+    - cuda
     """
 
-    supported_modes = {"cpu", "cpu-fp16", "cpu-int8", "mps", "mps-fp16"}
+    supported_modes = {"cpu", "cpu-fp16", "cpu-int8", "mps", "mps-fp16", "cuda"}
 
     if execution_mode not in supported_modes:
         raise ValueError(f"Unsupported mode: {execution_mode}")
@@ -28,6 +29,10 @@ def load_model(model_name=DEFAULT_MODEL_NAME, execution_mode="cpu"):
         if not torch.backends.mps.is_available():
             raise RuntimeError("MPS not available")
         device = "mps"
+    elif execution_mode == "cuda":
+        if not torch.cuda.is_available():
+            raise RuntimeError("CUDA not available")
+        device = "cuda"
     else:
         device = "cpu"
 
@@ -36,6 +41,8 @@ def load_model(model_name=DEFAULT_MODEL_NAME, execution_mode="cpu"):
     # -------------------------
     if execution_mode in {"cpu-fp16", "mps-fp16"}:
         torch_dtype = torch.float16
+    elif execution_mode == "cuda":
+        torch_dtype = torch.float32
     else:
         torch_dtype = torch.float32
 

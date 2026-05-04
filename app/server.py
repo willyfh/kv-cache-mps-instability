@@ -35,6 +35,15 @@ def _read_mps_allocated_mb(execution_mode):
         return None
 
 
+def _read_cuda_allocated_mb(execution_mode):
+    if execution_mode != "cuda":
+        return None
+    try:
+        return torch.cuda.memory_allocated() / (1024 * 1024)
+    except Exception:
+        return None
+
+
 class TextGenerationAPI(ls.LitAPI):
 
     def setup(self, device):
@@ -96,6 +105,11 @@ class TextGenerationAPI(ls.LitAPI):
                 torch.mps.synchronize()
             except Exception:
                 pass
+        elif self.execution_mode == "cuda":
+            try:
+                torch.cuda.synchronize()
+            except Exception:
+                pass
 
         peak_cpu_rss_mb = None
         peak_mps_allocated_mb = None
@@ -105,11 +119,14 @@ class TextGenerationAPI(ls.LitAPI):
             nonlocal peak_cpu_rss_mb, peak_mps_allocated_mb
             cpu = _read_cpu_rss_mb()
             mps = _read_mps_allocated_mb(self.execution_mode)
+            cuda_mb = _read_cuda_allocated_mb(self.execution_mode)
 
             if cpu is not None:
                 peak_cpu_rss_mb = cpu if peak_cpu_rss_mb is None else max(peak_cpu_rss_mb, cpu)
             if mps is not None:
                 peak_mps_allocated_mb = mps if peak_mps_allocated_mb is None else max(peak_mps_allocated_mb, mps)
+            if cuda_mb is not None:
+                peak_mps_allocated_mb = cuda_mb if peak_mps_allocated_mb is None else max(peak_mps_allocated_mb, cuda_mb)
 
         def memory_sampler_loop():
             while not sample_stop.wait(self.memory_sample_interval_s):
@@ -161,7 +178,8 @@ if __name__ == "__main__":
     api = TextGenerationAPI()
     config = load_config()
 
-    accelerator = "mps" if "mps" in config.get("execution_mode", "cpu") else "cpu"
+    _mode = config.get("execution_mode", "cpu")
+    accelerator = "cuda" if _mode == "cuda" else ("mps" if _mode.startswith("mps") else "cpu")
 
     server = ls.LitServer(
         api,
