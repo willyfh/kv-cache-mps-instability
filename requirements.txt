@@ -1,0 +1,9 @@
+litserve
+fastapi
+pydantic
+transformers
+torch
+numpy
+pyyaml
+psutil
+requests

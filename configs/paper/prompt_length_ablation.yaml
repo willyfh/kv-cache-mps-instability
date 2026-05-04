@@ -1,0 +1,38 @@
+# Experiment 4: Prompt length ablation — tests total sequence length hypothesis
+# Holds max_tokens constant while varying prompt length.
+# If instability tracks (prompt_tokens + generated_tokens) rather than generated_tokens alone,
+# that confirms KV cache growth (not generation length) as the driver.
+# Three prompt lengths: ~5 tokens (short), ~35 tokens (medium), ~85 tokens (long).
+
+benchmark_runs: 5
+benchmark_warmup_runs: 3
+timeout_seconds: 600
+benchmark_debug: false
+
+benchmark_base_url: http://localhost:8000
+benchmark_results_dir: benchmark_results/prompt_length_ablation_final2
+
+benchmark_deterministic: true
+benchmark_seed: 42
+benchmark_use_cache: true
+
+benchmark_capture_qualitative_samples: false
+benchmark_collect_memory: false
+
+benchmark_model_names:
+  - gpt2-medium
+
+benchmark_execution_modes:
+  - mps
+
+benchmark_offered_load_levels:
+  - 1
+
+benchmark_max_tokens:
+  - 624
+  - 640
+
+benchmark_prompts:
+  short: "Hello world."
+  # medium: "Language models process sequences of tokens and generate outputs autoregressively. This medium-length prompt is used to test how sequence length affects inference performance."
+  long: "The following is a technical description of language model inference systems on modern hardware. Language models are deployed in production systems that must balance throughput, latency, and memory usage across different hardware backends such as CPU and GPU. In general, model inference performance depends on model size, sequence length, and hardware efficiency. In this context,"

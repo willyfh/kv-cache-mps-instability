@@ -1,0 +1,51 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+dist/
+build/
+*.egg-info/
+.DS_Store
+*.log
+uv.lock
+media_v2/
+media_v5/
+
+# Dev/exploratory configs (paper configs are in configs/paper/)
+configs/anomaly_check.yaml
+configs/check.yaml
+configs/config.yaml
+configs/final_check.yaml
+configs/largest_case.yaml
+configs/max_mps.yaml
+configs/mini_sanity.yaml
+configs/new_config.yaml
+configs/new_config_load.yaml
+configs/report_config.yaml
+configs/report_config_fullscale.yaml
+configs/report_offered_load.yaml
+configs/report_offered_load_fullscale.yaml
+configs/rerun_suspicious_cases.yaml
+configs/safe_max_mps.yaml
+configs/safe_max_mps8.yaml
+configs/smoke_test.yaml
+configs/smoke_test_gpu_memory.yaml
+configs/smoke_test_gpu_memory_isolated.yaml
+configs/smoke_test_gpu_memory_isolated_reverse.yaml
+configs/smoke_test_gpu_memory_reverse.yaml
+configs/smoke_test_speed_large_compare.yaml
+configs/smoke_test_speed_large_cpu_isolated.yaml
+configs/smoke_test_speed_large_isolated.yaml
+configs/smoke_test_speed_small_compare.yaml
+
+# Old/unused media (paper figures are fig1-fig4)
+media/
+
+# Dev files
+client.py
+EXPERIMENTS.md
+scripts/print_benchmark_summary.py
+scripts/print_raw_latencies.py
+
+# Benchmark results data
+benchmark_results/
