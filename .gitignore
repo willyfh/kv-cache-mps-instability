@@ -46,6 +46,9 @@ references.bib
 # Old/unused media (paper figures are fig1-fig4)
 media/
 
+# Dev/scratch configs
+configs/paper/pytorch_version_check_minimal.yaml
+
 # Dev files
 client.py
 EXPERIMENTS.md
