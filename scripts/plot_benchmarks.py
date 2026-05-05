@@ -246,5 +246,4 @@ if __name__ == "__main__":
     fig2_instability_probe(f"{OUT_DIR}/fig2_instability_probe.pdf")
     fig3_kv_cache_ablation(f"{OUT_DIR}/fig3_kv_cache_ablation.pdf")
     fig4_prompt_ablation(f"{OUT_DIR}/fig4_prompt_ablation.pdf")
-    fig5_cuda_baseline(f"{OUT_DIR}/fig5_cuda_baseline.pdf")
     print("Done. All figures saved to media/")

@@ -38,6 +38,11 @@ configs/smoke_test_speed_large_cpu_isolated.yaml
 configs/smoke_test_speed_large_isolated.yaml
 configs/smoke_test_speed_small_compare.yaml
 
+# Paper source (lives on arXiv, not in code repo)
+report.tex
+report.pdf
+references.bib
+
 # Old/unused media (paper figures are fig1-fig4)
 media/
 

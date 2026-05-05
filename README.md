@@ -1,5 +1,7 @@
 # LitServe SLM Benchmark on Apple Silicon
 
+> **Note:** This is research benchmark code released for reproducibility purposes. It is not production software. Results are tied to specific hardware (Apple M3 Max) and software versions (PyTorch 2.8.0, macOS 14.8.1); behavior may differ on other configurations.
+
 ## Objective
 
 This project benchmarks autoregressive text-generation serving on Apple Silicon (M3), using GPT-2-family models deployed via a LitServe inference harness.
