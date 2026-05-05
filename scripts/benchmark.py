@@ -57,8 +57,8 @@ def start_server(
         [sys.executable, "-m", "app.server"],
         env=env,
         cwd=str(root),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stdout=None,
+        stderr=None,
         text=True,
         start_new_session=True,
     )
@@ -129,7 +129,7 @@ def run_case(url, payload, warmup, runs, concurrency, timeout):
         send(url, payload, timeout)
 
     lat, tok, mtps, e2e_mtps, dbg = [], [], [], [], []
-    cpu_rss, mps_alloc = [], []
+    cpu_rss, mps_alloc, system_memory = [], [], []
     prefill_times, decode_times = [], []
     first_request_latency = None
     sample_text = None
@@ -156,13 +156,15 @@ def run_case(url, payload, warmup, runs, concurrency, timeout):
                     prefill_times.append(d["prefill_time"])
                 if d.get("decode_time") is not None:
                     decode_times.append(d["decode_time"])
+                if d.get("system_memory_mb") is not None:
+                    system_memory.append(d["system_memory_mb"])
 
                 if first_request_latency is None:
                     first_request_latency = l
                 if sample_text is None:
                     sample_text = d.get("text")
 
-    return lat, tok, mtps, e2e_mtps, dbg, cpu_rss, mps_alloc, prefill_times, decode_times, first_request_latency, sample_text
+    return lat, tok, mtps, e2e_mtps, dbg, cpu_rss, mps_alloc, system_memory, prefill_times, decode_times, first_request_latency, sample_text
 
 
 def run_benchmark():
@@ -235,7 +237,7 @@ def run_benchmark():
 
                         (
                             lat, tok, mtps, e2e_mtps, dbg,
-                            cpu_rss, mps_alloc,
+                            cpu_rss, mps_alloc, system_memory,
                             prefill_times, decode_times,
                             first_req_lat, sample_text,
                         ) = run_case(
@@ -257,9 +259,10 @@ def run_benchmark():
 
                         peak_cpu_rss_mb   = float(np.max(cpu_rss))   if cpu_rss   else None
                         peak_mps_alloc_mb = float(np.max(mps_alloc)) if mps_alloc else None
+                        peak_system_memory_mb = float(np.max(system_memory)) if system_memory else None
                         peak_memory_mb = (
-                            max(v for v in [peak_cpu_rss_mb, peak_mps_alloc_mb] if v is not None)
-                            if any(v is not None for v in [peak_cpu_rss_mb, peak_mps_alloc_mb])
+                            max(v for v in [peak_cpu_rss_mb, peak_mps_alloc_mb, peak_system_memory_mb] if v is not None)
+                            if any(v is not None for v in [peak_cpu_rss_mb, peak_mps_alloc_mb, peak_system_memory_mb])
                             else None
                         )
 
@@ -301,6 +304,7 @@ def run_benchmark():
                             # memory
                             "peak_cpu_rss_mb":       peak_cpu_rss_mb,
                             "peak_mps_allocated_mb": peak_mps_alloc_mb,
+                            "peak_system_memory_mb": peak_system_memory_mb,
                             "peak_memory_mb":        peak_memory_mb,
                             # per-token step timing (non-monotonic instability analysis)
                             "avg_step_time":         dbg_agg["avg_step"],

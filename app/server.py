@@ -43,6 +43,12 @@ def _read_cuda_allocated_mb(execution_mode):
     except Exception:
         return None
 
+def _read_system_memory_mb():
+    try:
+        vm = psutil.virtual_memory()
+        return (vm.total - vm.available) / (1024 * 1024)
+    except Exception:
+        return None
 
 class TextGenerationAPI(ls.LitAPI):
 
@@ -113,20 +119,24 @@ class TextGenerationAPI(ls.LitAPI):
 
         peak_cpu_rss_mb = None
         peak_mps_allocated_mb = None
+        peak_system_memory_mb = None
         sample_stop = Event()
 
         def sample_memory_once():
-            nonlocal peak_cpu_rss_mb, peak_mps_allocated_mb
+            nonlocal peak_cpu_rss_mb, peak_mps_allocated_mb, peak_system_memory_mb
             cpu = _read_cpu_rss_mb()
             mps = _read_mps_allocated_mb(self.execution_mode)
             cuda_mb = _read_cuda_allocated_mb(self.execution_mode)
+            system = _read_system_memory_mb()
 
             if cpu is not None:
                 peak_cpu_rss_mb = cpu if peak_cpu_rss_mb is None else max(peak_cpu_rss_mb, cpu)
             if mps is not None:
                 peak_mps_allocated_mb = mps if peak_mps_allocated_mb is None else max(peak_mps_allocated_mb, mps)
             if cuda_mb is not None:
-                peak_mps_allocated_mb = cuda_mb if peak_mps_allocated_mb is None else max(peak_mps_allocated_mb, cuda_mb)
+                peak_mps_allocated_mb = cuda_mb if peak_mps_allocated_mb is None else max(peak_mps_allocated_mb, cuda_mb)    
+            if system is not None:
+                peak_system_memory_mb = system if peak_system_memory_mb is None else max(peak_system_memory_mb, system)
 
         def memory_sampler_loop():
             while not sample_stop.wait(self.memory_sample_interval_s):
@@ -163,9 +173,11 @@ class TextGenerationAPI(ls.LitAPI):
         if self.collect_memory:
             result["cpu_rss_mb"] = peak_cpu_rss_mb
             result["mps_allocated_mb"] = peak_mps_allocated_mb
+            result["system_memory_mb"] = peak_system_memory_mb
         else:
             result["cpu_rss_mb"] = None
             result["mps_allocated_mb"] = None
+            result["system_memory_mb"] = None
 
         return result
 
