@@ -40,7 +40,7 @@ curl -s -X POST http://localhost:8000/predict \
 
 ## Experiment Configs
 
-Configs used to produce the paper's results are in `configs/paper/`.
+Configs used to produce the paper's results are in `configs/paper/`. The paper is the authoritative source for reported numbers; treat these configs as a close approximation for reproduction rather than a guaranteed byte-for-byte match, since some results underwent reruns during the original data collection.
 
 ## Benchmark Method
 
