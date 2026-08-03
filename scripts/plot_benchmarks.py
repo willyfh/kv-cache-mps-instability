@@ -76,7 +76,7 @@ def fig1_latency_scaling(out_path):
                 color=mode_colors[mode_label], linewidth=1.8, markersize=5
             )
         ax.set_title(MODEL_LABELS[model_key], fontweight="bold")
-        ax.set_xlabel("Generated tokens")
+        ax.set_xlabel("Decoding Budget (max_tokens)")
         ax.set_ylabel("Avg latency (s)")
         ax.xaxis.set_major_locator(mticker.MultipleLocator(128))
 
@@ -141,7 +141,7 @@ def fig2_instability_probe(out_path):
     ax.axvline(624, color="red",  linestyle="--", linewidth=1, alpha=0.7)
     ax.axvline(640, color="green", linestyle="--", linewidth=1, alpha=0.7, label="Recovery (640 tok)")
 
-    ax.set_xlabel("max_tokens (generation budget)")
+    ax.set_xlabel("Decoding Budget (max_tokens)")
     ax.set_ylabel("Avg latency (s)")
     ax.set_title("Instability Probe — GPT-2 Medium / MPS", fontweight="bold")
     ax.xaxis.set_major_locator(mticker.MultipleLocator(16))
@@ -183,7 +183,7 @@ def fig3_kv_cache_ablation(out_path):
         ax.plot(csub["max_tokens"], csub["avg_latency"],
                 marker="o", label=cache_label,
                 color=palette[cache_label], linewidth=2, markersize=5)
-    ax.set_xlabel("Generated tokens")
+    ax.set_xlabel("Decoding Budget (max_tokens)")
     ax.set_ylabel("Avg latency (s)")
     ax.xaxis.set_major_locator(mticker.MultipleLocator(128))
     ax.legend()
@@ -225,7 +225,7 @@ def fig4_prompt_ablation(out_path):
 
     ax.set_xticks(list(x))
     ax.set_xticklabels([str(t) for t in token_vals])
-    ax.set_xlabel("max_tokens (generation budget)")
+    ax.set_xlabel("Decoding Budget (max_tokens)")
     ax.set_ylabel("Avg latency (s)")
     ax.set_title("Prompt-Length Ablation — GPT-2 Medium / MPS", fontweight="bold")
     ax.legend(title="Prompt length")
